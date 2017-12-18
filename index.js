@@ -87,8 +87,10 @@ pargv.command('list-purge.lp [dir]', 'Purges the auto generated backup and confl
   ])
   .action((dir, parsed, cmd) => {
     neat.purgeList(dir, parsed.backup);
-    utils.log(`purged "${utils.toRelative(dir)}" using "${parsed.backup}".`, 'SUCCESS', 'green');
+    utils.log(`purged ${parsed.backup} and "_conflicts" from "${utils.toRelative(dir)}".`, 'SUCCESS', 'green');
   });
+
+// NETWORK
 
 pargv.command('ping.pi [start:string] [end:string] --servers [servers:string] --mode [mode]', 'Pings network looking up hostnames, mac addresses and vendor details. Pass --mode import to import scanned values and overwrite local values or --mode merge to merge local values with new scanned hostnames.')
   .describe('--mode', 'import overwrites, merge combines scan w/ local hostnames.')
