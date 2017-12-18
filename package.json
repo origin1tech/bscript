@@ -1,0 +1,36 @@
+{
+  "name": "bscript",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scripts for Brandon.",
+  "main": "index.js",
+  "bin": {
+    "bscript": "bin/bscript"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin1tech/bscript.git"
+  },
+  "author": "Origin1 Technologies <origin1tech@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/origin1tech/bscript/issues"
+  },
+  "homepage": "https://github.com/origin1tech/bscript#readme",
+  "dependencies": {
+    "chek": "^1.1.2",
+    "colurs": "^1.0.18",
+    "fs-extra": "^5.0.0",
+    "ip": "^1.1.5",
+    "libnmap": "^0.4.8",
+    "opn": "^5.1.0",
+    "ora": "^1.3.0",
+    "pargv": "^2.0.33",
+    "table": "^4.0.2",
+    "text-table": "^0.2.0",
+    "xml2js": "^0.4.19"
+  }
+}
