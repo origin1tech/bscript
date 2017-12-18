@@ -86,8 +86,9 @@ pargv.command('list-purge.lp [dir]', 'Purges the auto generated backup and confl
     [`$ list-purge --backup 'my_backup'`, 'Purge using custom backup directory.']
   ])
   .action((dir, parsed, cmd) => {
+    
     neat.purgeList(dir, parsed.backup);
-    utils.log(`purged ${parsed.backup} and "_conflicts" from "${utils.toRelative(dir)}".`, 'SUCCESS', 'green');
+    utils.log(`purged ${parsed.backup} and "_conflicts" from "${utils.toRelative(dir || '.')}".`, 'SUCCESS', 'green');
   });
 
 // NETWORK
