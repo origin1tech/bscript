@@ -22,7 +22,8 @@
   "homepage": "https://github.com/origin1tech/bscript#readme",
   "dependencies": {
     "chek": "^1.1.2",
-    "colurs": "^1.0.18",
+    "colurs": "^1.0.21",
+    "figlet": "^1.2.0",
     "fs-extra": "^5.0.0",
     "ip": "^1.1.5",
     "libnmap": "^0.4.8",

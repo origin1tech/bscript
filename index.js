@@ -1,5 +1,7 @@
 const Pargv = require('pargv').Pargv;
 const pkg = require('./package.json');
+const figlet = require('figlet');
+const colurs = require('colurs').init();
 const app = require('./lib/app');
 const neat = require('./lib/neat');
 const nmap = require('./lib/nmap');
@@ -9,12 +11,16 @@ const { toArray } = require('chek');
 const CONFIG = app.load();
 
 const pargv = new Pargv({
-  layoutWidth: 90
+  layoutWidth: 90,
+  displayNone: true
 });
 
 // PARGV
 
-pargv.name(pkg.name, ['blue'], 'Ogre')
+let appName = figlet.textSync(pkg.name, { font: 'ogre' });
+appName = colurs.blue(appName);
+
+pargv.name(appName)
   .description('Bscript consists of a group of helpful scripts for Brandon Lindholm.')
   .version(pkg.version)
   .license(pkg.license);
@@ -23,9 +29,12 @@ pargv.name(pkg.name, ['blue'], 'Ogre')
 
 pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory using a csv file\'s metadata to create the new filename.')
   .option('--csv, -c [csv]', 'The csv file path to parse.', '_list.csv')
-  .option('--map, -m [map]', 'A map string used to build rename filename.')
+  .option('--map, -m [map:string]', 'A map string used to build rename filename.')
   .option('--preview, -p', 'When true previews renames & conflicts.')
+  .option('--pad, -d [pad]', 'Ensures numbers padded with 0 this many digits before decimal.', 9)
   .option('--truncate, -t [truncate:number]', 'Max string length.', 25)
+  .option('--titlecase, -l', 'When true strings converted to titlecase.')
+  .option('--joiner, -j [joiner]', 'Character uses for joining typicaly space or -.', 'space')
   .option('--backup, -b [backup]', 'Relative backup directory or false.', '_backup')
   .example([
     [`$ list-rename --map 'receipt-vendor-[note]-amount'`, 'Using map and current directory.'],
@@ -38,7 +47,10 @@ pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory usi
     const result = neat.renameList(dir, parsed.map, parsed.preview, {
       truncate: parsed.truncate,
       backup: parsed.backup,
-      csv: parsed.csv
+      csv: parsed.csv,
+      titlecase: parsed.titlecase,
+      pad: parsed.pad,
+      joiner: parsed.joiner
     });
     let renamed = utils.colorize(' ' + result.renamed + ' ', ['bgGreen', 'black']);
     let conflicts = utils.colorize(' ' + result.conflicts + ' ', ['bgRed']);
@@ -72,7 +84,7 @@ pargv.command('list-restore.lt [to:string:.]', 'Restores a previous list-rename 
     neat.restoreList(to, parsed.from, parsed.empty, parsed.purge);
     to = utils.toRelative(to);
     console.log();
-    utils.log(`restored directory "${to}" using "${parsed.from}".`, 'SUCCESS', 'green', true);
+    utils.log(`restored directory "${to || '.'}" using "${parsed.from}".`, 'SUCCESS', 'green', true);
     if (parsed.purge)
       utils.log(`backup and conflicts purged.`, 'PURGED', 'magenta', true);
     console.log();
@@ -86,9 +98,9 @@ pargv.command('list-purge.lp [dir]', 'Purges the auto generated backup and confl
     [`$ list-purge --backup 'my_backup'`, 'Purge using custom backup directory.']
   ])
   .action((dir, parsed, cmd) => {
-    
+
     neat.purgeList(dir, parsed.backup);
-    utils.log(`purged ${parsed.backup} and "_conflicts" from "${utils.toRelative(dir || '.')}".`, 'SUCCESS', 'green');
+    utils.log(`purged ${parsed.backup} and "_conflicts" from "${utils.toRelative(dir || '.') || '.'}".`, 'SUCCESS', 'green');
   });
 
 // NETWORK
