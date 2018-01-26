@@ -34,9 +34,10 @@ pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory usi
   .option('--map, -m [map:string]', 'A map string used to build rename filename.')
   .option('--cols, -c [cols]', 'The expression for creating columns', ' - ')
   .option('--preview, -p', 'When true previews renames & conflicts.')
+  .option('--parens, -n', 'When true neg numbers wrapped in parens.')
   .option('--pad, -d [pad]', 'Ensures numbers padded with 0 this many digits before decimal.', 9)
   .option('--truncate, -t [truncate:number]', 'Max string length.', 25)
-  .option('--titlecase, -l', 'When true strings converted to titlecase.')
+  .option('--titlecase, -l', 'When true strings converted to titlecase.', true)
   .option('--joiner, -j [joiner]', 'Character uses for joining typicaly space or -.', 'space')
   .option('--backup, -b [backup]', 'Relative backup directory or false.', '_backup')
   .example([
@@ -81,7 +82,7 @@ pargv.command('list-replace [dir:string:.]', 'Find and replace by an expression.
   .option('--replace, -r [replace]', 'The value to replace found values with.')
   .option('--multi, -m', 'When true replaces csv values from find.')
   .option('--insert, -i', 'Inserts current value between two replaced values.')
-  .option('--range, -r', 'Replaces all characters in range including start/end chars.')
+  .option('--span, -r', 'Replaces all characters in span including start/end chars.')
   .option('--filter, -f [filter]', 'An expression to prefilter before find action.', undefined, 'string')
   .option('--backup, -b [backup]', 'Backup folder location', '_backup')
   .option('--preview, -p', 'Shows preview without changes.')
@@ -102,6 +103,36 @@ pargv.command('list-replace [dir:string:.]', 'Find and replace by an expression.
     if (parsed.preview) {
       prefix = 'PREVIEW';
       msg = '%s files can be renamed with %s ignored.';
+    }
+    if (result.renamed === 0) {
+      if (!parsed.preview)
+        prefix = 'WARNING';
+      styles = ['yellow'];
+    }
+    msg = utils.format(msg, renamed, ignored);
+    utils.log(msg, prefix, styles);
+  });
+
+pargv.command('list-reorder [dir:string]', 'Reorders filenames based on columns map.')
+  .option('--order,  -o [order]', 'The indexes to reorder by.', null, 'array')
+  .option('--cols, -c [cols:string]', 'The expression used to split columns', ' - ')
+  .option('--truncate, -t [truncate:number]', 'Max string length.', 25)
+  .option('--titlecase, -l', 'When true strings converted to titlecase.', true)
+  .option('--pad, -d [pad]', 'Ensures numbers padded with 0 this many digits before decimal.', 9)
+  .option('--filter, -f [filter]', 'Prefilters files to reorder.', undefined, 'string')
+  .option('--backup, -b [backup]', 'Backup folder location', '_backup')
+  .option('--preview, -p', 'When true previews reorder before action.')
+  .describe('dir', 'The directory to run the action on.')
+  .action((dir, parsed) => {
+    const result = neat.reorderList(dir, parsed);
+    let renamed = utils.colorize(' ' + result.renamed + ' ', ['bgGreen', 'black']);
+    let ignored = utils.colorize(' ' + result.conflicts + ' ', ['bgYellow', 'black']);
+    let msg = '%s files reordered with %s ignored.';
+    let prefix = 'SUCCESS';
+    let styles = ['green'];
+    if (parsed.preview) {
+      prefix = 'PREVIEW';
+      msg = '%s files can be reordered with %s ignored.';
     }
     if (result.renamed === 0) {
       if (!parsed.preview)
