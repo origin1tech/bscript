@@ -29,7 +29,10 @@ pargv.name(appName)
 
 pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory using a csv file\'s metadata to create the new filename.')
   .option('--csv, -c [csv]', 'The csv file path to parse.', '_list.csv')
+  .option('--key, -k [key]', 'The column indexes used for key.', [0, 1])
+  .option('--delim, -d [delim]', 'The delimiter to be used for csv rows', ',')
   .option('--map, -m [map:string]', 'A map string used to build rename filename.')
+  .option('--cols, -c [cols]', 'The expression for creating columns', ' - ')
   .option('--preview, -p', 'When true previews renames & conflicts.')
   .option('--pad, -d [pad]', 'Ensures numbers padded with 0 this many digits before decimal.', 9)
   .option('--truncate, -t [truncate:number]', 'Max string length.', 25)
@@ -50,7 +53,10 @@ pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory usi
       csv: parsed.csv,
       titlecase: parsed.titlecase,
       pad: parsed.pad,
-      joiner: parsed.joiner
+      joiner: parsed.joiner,
+      delim: parsed.delim,
+      key: parsed.key,
+      cols: parsed.cols
     });
     let renamed = utils.colorize(' ' + result.renamed + ' ', ['bgGreen', 'black']);
     let conflicts = utils.colorize(' ' + result.conflicts + ' ', ['bgRed']);
@@ -70,6 +76,41 @@ pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory usi
     utils.log(msg, prefix, styles);
   });
 
+pargv.command('list-replace [dir:string:.]', 'Find and replace by an expression.')
+  .option('--find, -f <find:string>', 'The expression to find.')
+  .option('--replace, -r [replace]', 'The value to replace found values with.')
+  .option('--cols, -c [cols]', 'The expression for creating columns.', ' - ')
+  .option('--multi, -m', 'When true replaces csv values from find.')
+  .option('--all, -a', 'When true replaces all of filname.')
+  .option('--backup, -b [backup]', 'Backup folder location', '_backup')
+  .option('--preview, -p', 'Shows preview without changes.')
+  .when('--all', '--replace')
+  .example([
+    [`$ list-replace --find '['`, 'Replace character "[" with empty space.'],
+    [`$ list-replace --find '610.87' --replace '625.55`, 'Replace charactes "610.87" with "625.87".'],
+    [`$ list-replace --find '/pdf$/' --replace 'txt'`, 'Replace all "pdf" file extensions with "txt".'],
+    [`$ list-replace --find '[,]' --multi`, 'Replaces either "[" or "]" with a space.']
+  ])
+  .action((dir, parsed) => {
+    const result = neat.replaceList(dir, parsed);
+    let renamed = utils.colorize(' ' + result.renamed + ' ', ['bgGreen', 'black']);
+    let ignored = utils.colorize(' ' + result.conflicts + ' ', ['bgYellow', 'black']);
+    let msg = '%s files renamed with %s ignored.';
+    let prefix = 'SUCCESS';
+    let styles = ['green'];
+    if (parsed.preview) {
+      prefix = 'PREVIEW';
+      msg = '%s files can be renamed with %s ignored.';
+    }
+    if (result.renamed === 0) {
+      if (!parsed.preview)
+        prefix = 'WARNING';
+      styles = ['yellow'];
+    }
+    msg = utils.format(msg, renamed, ignored);
+    utils.log(msg, prefix, styles);
+  });
+
 pargv.command('list-restore.lt [to:string:.]', 'Restores a previous list-rename action using a backup folder, typically named _backup.')
   .option('--from, -f [from]', 'Specify folder name to restore from.', '_backup')
   .option('--empty, -e', 'When true empties the directory before restore.', true)
@@ -86,7 +127,7 @@ pargv.command('list-restore.lt [to:string:.]', 'Restores a previous list-rename 
     console.log();
     utils.log(`restored directory "${to || '.'}" using "${parsed.from}".`, 'SUCCESS', 'green', true);
     if (parsed.purge)
-      utils.log(`backup and conflicts purged.`, 'PURGED', 'magenta', true);
+      utils.log(`directory "${parsed.from}" has been purged.`, 'PURGED', 'magenta', true);
     console.log();
   });
 
@@ -98,9 +139,8 @@ pargv.command('list-purge.lp [dir]', 'Purges the auto generated backup and confl
     [`$ list-purge --backup 'my_backup'`, 'Purge using custom backup directory.']
   ])
   .action((dir, parsed, cmd) => {
-
     neat.purgeList(dir, parsed.backup);
-    utils.log(`purged ${parsed.backup} and "_conflicts" from "${utils.toRelative(dir || '.') || '.'}".`, 'SUCCESS', 'green');
+    utils.log(`purged ${parsed.backup} using directory "${utils.toRelative(dir || '.') || '.'}".`, 'SUCCESS', 'green');
   });
 
 // NETWORK
