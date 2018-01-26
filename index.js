@@ -79,9 +79,10 @@ pargv.command('list-rename.lr [dir:string:.]', 'Renames files in a directory usi
 pargv.command('list-replace [dir:string:.]', 'Find and replace by an expression.')
   .option('--find, -f <find:string>', 'The expression to find.')
   .option('--replace, -r [replace]', 'The value to replace found values with.')
-  .option('--cols, -c [cols]', 'The expression for creating columns.', ' - ')
   .option('--multi, -m', 'When true replaces csv values from find.')
-  .option('--all, -a', 'When true replaces all of filname.')
+  .option('--insert, -i', 'Inserts current value between two replaced values.')
+  .option('--range, -r', 'Replaces all characters in range including start/end chars.')
+  .option('--filter, -f [filter]', 'An expression to prefilter before find action.', undefined, 'string')
   .option('--backup, -b [backup]', 'Backup folder location', '_backup')
   .option('--preview, -p', 'Shows preview without changes.')
   .when('--all', '--replace')
@@ -89,7 +90,7 @@ pargv.command('list-replace [dir:string:.]', 'Find and replace by an expression.
     [`$ list-replace --find '['`, 'Replace character "[" with empty space.'],
     [`$ list-replace --find '610.87' --replace '625.55`, 'Replace charactes "610.87" with "625.87".'],
     [`$ list-replace --find '/pdf$/' --replace 'txt'`, 'Replace all "pdf" file extensions with "txt".'],
-    [`$ list-replace --find '[,]' --multi`, 'Replaces either "[" or "]" with a space.']
+    [`$ list-replace --find '[,],)' --multi`, 'Replaces either "[", "]" or ")" with a space.']
   ])
   .action((dir, parsed) => {
     const result = neat.replaceList(dir, parsed);
@@ -264,6 +265,11 @@ pargv.command('remove-host.rh <ip:string>', 'Removes a hostname in "bscript" con
     nmap.removeHost(ip);
     app.save();
     utils.log(`ip: ${utils.colorize(ip, 'cyan')}  removed: ${utils.colorize(prev, 'red')}`);
+  });
+
+pargv.command('version', 'Shows the current version of the application.')
+  .action(() => {
+    utils.log(`Bscript version: ${pkg.version}`);
   });
 
 
